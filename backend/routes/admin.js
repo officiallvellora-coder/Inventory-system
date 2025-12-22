@@ -132,5 +132,7 @@ router.get('/sales-analytics', adminController.getSalesAnalytics);
 router.get('/alerts', adminController.getAlerts);
 router.get('/expiring-batches', adminController.getExpiringBatches);
 router.post('/recall-batch/:batchNumber', adminController.recallBatch);
+router.get('/inventory-showcase', adminController.getInventoryShowcase);
 
 module.exports = router;
+
