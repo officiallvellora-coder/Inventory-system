@@ -6,9 +6,47 @@ const adminController = require('../controllers/adminController');
 
 const router = express.Router();
 
-// protect all admin routes
+/* =====================
+   PROTECT ALL ADMIN ROUTES
+   ===================== */
 router.use(auth);
 router.use(adminAuth);
+
+/* =====================
+   CHANGE ADMIN PASSWORD
+   ===================== */
+router.post('/change-password', async (req, res) => {
+  const { currentPassword, newPassword } = req.body;
+
+  if (!currentPassword || !newPassword) {
+    return res.status(400).json({ error: 'Missing fields' });
+  }
+
+  db.get(
+    `SELECT * FROM users WHERE id = ? AND role = 'admin'`,
+    [req.user.id],
+    async (err, admin) => {
+      if (err) return res.status(500).json({ error: err.message });
+      if (!admin) return res.status(404).json({ error: 'Admin not found' });
+
+      const isMatch = await bcrypt.compare(currentPassword, admin.password);
+      if (!isMatch) {
+        return res.status(400).json({ error: 'Current password incorrect' });
+      }
+
+      const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+
+      db.run(
+        `UPDATE users SET password = ? WHERE id = ?`,
+        [hashedNewPassword, admin.id],
+        err => {
+          if (err) return res.status(500).json({ error: err.message });
+          res.json({ message: 'Admin password updated successfully' });
+        }
+      );
+    }
+  );
+});
 
 /* =====================
    VIEW ALL USERS
@@ -20,7 +58,7 @@ router.get('/users', adminController.getUsers);
    ===================== */
 router.get('/pending-users', (req, res) => {
   db.all(
-    `SELECT id, name, email, role, mobile, location, pincode, createdAt
+    `SELECT id, name, email, role, phone, location, pincode, createdAt
      FROM users WHERE status = 'pending'`,
     (err, rows) => {
       if (err) return res.status(500).json({ error: err.message });
@@ -67,7 +105,7 @@ router.delete('/reject-user/:id', (req, res) => {
 router.post('/create-superstockist', async (req, res) => {
   const { name, email, password, mobile, location, pincode } = req.body;
 
-  if (!name || !email || !password) {
+  if (!name || !email || !password || !mobile || !location || !pincode) {
     return res.status(400).json({ error: 'Missing fields' });
   }
 
@@ -76,7 +114,7 @@ router.post('/create-superstockist', async (req, res) => {
 
   db.run(
     `INSERT INTO users
-     (id, name, email, password, role, mobile, location, pincode, status)
+     (id, name, email, password, role, phone, location, pincode, status)
      VALUES (?, ?, ?, ?, 'superstockist', ?, ?, ?, 'active')`,
     [id, name, email, hashedPassword, mobile, location, pincode],
     err => {
