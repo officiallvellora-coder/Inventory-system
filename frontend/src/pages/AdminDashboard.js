@@ -9,11 +9,17 @@ export default function AdminDashboard() {
   const [stats, setStats] = useState([]);
   const [alerts, setAlerts] = useState([]);
   const [pendingUsers, setPendingUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchStats();
-    fetchAlerts();
-    fetchPendingUsers();
+    if (!token) {
+      window.location.href = '/login';
+      return;
+    }
+
+    Promise.all([fetchStats(), fetchAlerts(), fetchPendingUsers()])
+      .finally(() => setLoading(false));
+    // eslint-disable-next-line
   }, []);
 
   const fetchStats = async () => {
@@ -54,51 +60,102 @@ export default function AdminDashboard() {
     fetchPendingUsers();
   };
 
-  return (
-    <div className="admin-dashboard">
-      <h1>VELLORA HYBRID SYSTEM</h1>
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    window.location.href = '/login';
+  };
 
+  if (loading) {
+    return <div style={{ padding: 30 }}>Loading...</div>;
+  }
+
+  return (
+    <div className="admin-dashboard" style={{ padding: 20 }}>
+      {/* Header */}
+      <div style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 30
+      }}>
+        <h1>VELLORA HYBRID SYSTEM</h1>
+        <button
+          onClick={handleLogout}
+          style={{
+            padding: '8px 16px',
+            background: '#e74c3c',
+            color: '#fff',
+            border: 'none',
+            borderRadius: 4,
+            cursor: 'pointer'
+          }}
+        >
+          Logout
+        </button>
+      </div>
+
+      {/* Inventory Overview */}
       <h2>Inventory Overview</h2>
-      <div className="stats-grid">
+      <div className="stats-grid" style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+        gap: 16,
+        marginBottom: 30
+      }}>
         {stats.map((s, i) => (
-          <div key={i} className="stat-card">
-            <h3>{s.role}</h3>
+          <div key={i} className="stat-card" style={{
+            padding: 16,
+            borderRadius: 8,
+            background: '#f5f6fa'
+          }}>
+            <h3 style={{ textTransform: 'capitalize' }}>{s.role}</h3>
             <p>Total Qty: {s.totalQuantity}</p>
             <p>Low Stock: {s.lowStockItems}</p>
           </div>
         ))}
       </div>
 
+      {/* Pending Users */}
       <h2>Pending Registrations</h2>
       {pendingUsers.length === 0 ? (
         <p>No pending users</p>
       ) : (
-        <table>
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Role</th>
-              <th>Location</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {pendingUsers.map(u => (
-              <tr key={u.id}>
-                <td>{u.name}</td>
-                <td>{u.role}</td>
-                <td>{u.location}</td>
-                <td>
-                  <button onClick={() => approveUser(u.id)}>Approve</button>
-                  <button onClick={() => rejectUser(u.id)}>Reject</button>
-                </td>
+        <div style={{ overflowX: 'auto' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <thead>
+              <tr>
+                <th align="left">Name</th>
+                <th align="left">Role</th>
+                <th align="left">Location</th>
+                <th align="left">Action</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {pendingUsers.map(u => (
+                <tr key={u.id}>
+                  <td>{u.name}</td>
+                  <td>{u.role}</td>
+                  <td>{u.location}</td>
+                  <td>
+                    <button
+                      onClick={() => approveUser(u.id)}
+                      style={{ marginRight: 8 }}
+                    >
+                      Approve
+                    </button>
+                    <button onClick={() => rejectUser(u.id)}>
+                      Reject
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
 
-      <h2>System Alerts</h2>
+      {/* Alerts */}
+      <h2 style={{ marginTop: 30 }}>System Alerts</h2>
       {alerts.length === 0 ? (
         <p>No alerts</p>
       ) : (
