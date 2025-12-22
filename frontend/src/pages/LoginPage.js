@@ -15,10 +15,12 @@ export default function LoginPage({ setUser }) {
   const [pincode, setPincode] = useState('');
 
   const [message, setMessage] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const handleLogin = async (e) => {
     e.preventDefault();
     setMessage('');
+    setLoading(true);
 
     try {
       const res = await axios.post(`${API_URL}/auth/login`, {
@@ -31,15 +33,24 @@ export default function LoginPage({ setUser }) {
       window.location.href = '/dashboard';
     } catch (err) {
       setMessage(err.response?.data?.error || 'Login failed');
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleRegister = async (e) => {
     e.preventDefault();
     setMessage('');
+    setLoading(true);
+
+    if (!name || !email || !password || !location) {
+      setMessage('Please fill all required fields');
+      setLoading(false);
+      return;
+    }
 
     try {
-      const res = await axios.post(`${API_URL}/auth/register`, {
+      await axios.post(`${API_URL}/auth/register`, {
         name,
         email,
         password,
@@ -53,6 +64,8 @@ export default function LoginPage({ setUser }) {
       setMode('login');
     } catch (err) {
       setMessage(err.response?.data?.error || 'Registration failed');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -71,6 +84,7 @@ export default function LoginPage({ setUser }) {
                 onChange={e => setEmail(e.target.value)}
                 required
               />
+
               <input
                 type="password"
                 placeholder="Password"
@@ -78,7 +92,10 @@ export default function LoginPage({ setUser }) {
                 onChange={e => setPassword(e.target.value)}
                 required
               />
-              <button type="submit">Login</button>
+
+              <button type="submit" disabled={loading}>
+                {loading ? 'Logging in...' : 'Login'}
+              </button>
             </form>
 
             <p onClick={() => setMode('register')} style={{ cursor: 'pointer' }}>
@@ -127,6 +144,7 @@ export default function LoginPage({ setUser }) {
                 placeholder="Location"
                 value={location}
                 onChange={e => setLocation(e.target.value)}
+                required
               />
 
               <input
@@ -135,7 +153,9 @@ export default function LoginPage({ setUser }) {
                 onChange={e => setPincode(e.target.value)}
               />
 
-              <button type="submit">Submit Registration</button>
+              <button type="submit" disabled={loading}>
+                {loading ? 'Submitting...' : 'Submit Registration'}
+              </button>
             </form>
 
             <p onClick={() => setMode('login')} style={{ cursor: 'pointer' }}>
