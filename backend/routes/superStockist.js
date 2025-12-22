@@ -7,9 +7,9 @@ const router = express.Router();
 
 /*
   SUPER-STOCKIST RULES:
-  - Can view own distributors
-  - Can generate BOX + PRODUCT QRs
-  - Has visibility of downstream stock
+  - View distributors
+  - Generate BOX + PRODUCT QRs
+  - View downstream stock
 */
 
 // Get all distributors under this super-stockist
@@ -53,11 +53,7 @@ router.get('/stock-movement/:superStockistId', auth, (req, res) => {
   );
 });
 
-// Generate BOX + PRODUCT QRs (12 units per box)
-router.post(
-  '/generate-box',
-  auth,
-  qrController.generateBoxWithProducts
-);
+// Generate BOX + PRODUCT QRs
+router.post('/generate-box', auth, qrController.generateBoxWithProducts);
 
 module.exports = router;
