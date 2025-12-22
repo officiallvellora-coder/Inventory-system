@@ -6,8 +6,7 @@ const API_URL = 'https://inventory-system-9k38.onrender.com/api';
 export default function CustomerScanner() {
   const [role, setRole] = useState('');
   const [qrCode, setQrCode] = useState('');
-  const [shopName, setShopName] = useState('');
-  const [ownerName, setOwnerName] = useState('');
+  const [name, setName] = useState('');
   const [mobile, setMobile] = useState('');
   const [location, setLocation] = useState('');
   const [pincode, setPincode] = useState('');
@@ -16,7 +15,7 @@ export default function CustomerScanner() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!role || !qrCode || !shopName || !ownerName || !mobile || !location) {
+    if (!role || !qrCode || !name || !mobile || !location) {
       setMessage('All required fields must be filled');
       return;
     }
@@ -25,8 +24,7 @@ export default function CustomerScanner() {
       const res = await axios.post(`${API_URL}/customer/scan`, {
         qrCode,
         role,
-        shopName,
-        ownerName,
+        name,
         mobile,
         location,
         pincode
@@ -35,8 +33,7 @@ export default function CustomerScanner() {
       setMessage(res.data.message);
 
       setQrCode('');
-      setShopName('');
-      setOwnerName('');
+      setName('');
       setMobile('');
       setLocation('');
       setPincode('');
@@ -46,55 +43,56 @@ export default function CustomerScanner() {
   };
 
   return (
-    <div className="customer-scanner">
-      <h1>QR Scan Registration</h1>
+    <div style={{ padding: 24, maxWidth: 500, margin: '0 auto' }}>
+      <h1>QR Scan</h1>
 
       <form onSubmit={handleSubmit}>
-        <div className="form-group">
-          <label>Scan As</label>
-          <select value={role} onChange={e => setRole(e.target.value)}>
-            <option value="">Select Role</option>
-            <option value="distributor">Distributor</option>
-            <option value="retailer">Retailer</option>
-            <option value="customer">Customer</option>
-          </select>
-        </div>
+        <label>Scan As</label>
+        <select value={role} onChange={e => setRole(e.target.value)}>
+          <option value="">Select Role</option>
+          <option value="superstockist">Super Stockist</option>
+          <option value="distributor">Distributor</option>
+          <option value="retailer">Retailer</option>
+          <option value="customer">Customer</option>
+        </select>
 
-        <div className="form-group">
-          <label>QR Code</label>
-          <input value={qrCode} onChange={e => setQrCode(e.target.value)} />
-        </div>
+        <label>QR Code</label>
+        <input
+          value={qrCode}
+          onChange={e => setQrCode(e.target.value)}
+          placeholder="UNIT-XXXX"
+        />
 
-        <div className="form-group">
-          <label>Shop Name</label>
-          <input value={shopName} onChange={e => setShopName(e.target.value)} />
-        </div>
+        <label>Name</label>
+        <input
+          value={name}
+          onChange={e => setName(e.target.value)}
+        />
 
-        <div className="form-group">
-          <label>Owner Name</label>
-          <input value={ownerName} onChange={e => setOwnerName(e.target.value)} />
-        </div>
+        <label>Mobile</label>
+        <input
+          value={mobile}
+          onChange={e => setMobile(e.target.value)}
+        />
 
-        <div className="form-group">
-          <label>Mobile Number</label>
-          <input value={mobile} onChange={e => setMobile(e.target.value)} />
-        </div>
+        <label>Location</label>
+        <input
+          value={location}
+          onChange={e => setLocation(e.target.value)}
+        />
 
-        <div className="form-group">
-          <label>Location</label>
-          <input value={location} onChange={e => setLocation(e.target.value)} />
-        </div>
+        <label>Pincode</label>
+        <input
+          value={pincode}
+          onChange={e => setPincode(e.target.value)}
+        />
 
-        <div className="form-group">
-          <label>Pincode</label>
-          <input value={pincode} onChange={e => setPincode(e.target.value)} />
-        </div>
-
-        <button type="submit">Submit Scan</button>
+        <button type="submit" style={{ marginTop: 16 }}>
+          Submit Scan
+        </button>
       </form>
 
-      {message && <div className="message">{message}</div>}
+      {message && <p style={{ marginTop: 16 }}>{message}</p>}
     </div>
   );
-
 }
