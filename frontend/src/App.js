@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import axios from 'axios';
+import jwtDecode from 'jwt-decode';
+
 import AdminDashboard from './pages/AdminDashboard';
 import SuperStockistDashboard from './pages/SuperStockistDashboard';
 import DistributorDashboard from './pages/DistributorDashboard';
@@ -9,25 +10,27 @@ import CustomerScanner from './pages/CustomerScanner';
 import LoginPage from './pages/LoginPage';
 import './App.css';
 
-const API_URL = 'http://localhost:5000/api';
-
 function App() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
+
     if (token) {
-      axios
-        .get(`${API_URL}/auth/verify`, {
-          headers: { Authorization: `Bearer ${token}` }
-        })
-        .then((res) => setUser(res.data.user))
-        .catch(() => localStorage.removeItem('token'))
-        .finally(() => setLoading(false));
-    } else {
-      setLoading(false);
+      try {
+        const decoded = jwtDecode(token);
+        setUser({
+          id: decoded.id,
+          role: decoded.role
+        });
+      } catch (err) {
+        localStorage.removeItem('token');
+        setUser(null);
+      }
     }
+
+    setLoading(false);
   }, []);
 
   if (loading) return <div className="loader">Loading...</div>;
@@ -39,13 +42,14 @@ function App() {
           path="/login"
           element={user ? <Navigate to="/dashboard" /> : <LoginPage setUser={setUser} />}
         />
+
         <Route
           path="/dashboard"
           element={
             user ? (
               user.role === 'admin' ? (
                 <AdminDashboard />
-              ) : user.role === 'super-stockist' ? (
+              ) : user.role === 'superstockist' ? (
                 <SuperStockistDashboard />
               ) : user.role === 'distributor' ? (
                 <DistributorDashboard />
@@ -59,6 +63,7 @@ function App() {
             )
           }
         />
+
         <Route path="/scanner" element={<CustomerScanner />} />
         <Route path="*" element={<Navigate to="/login" />} />
       </Routes>
