@@ -3,7 +3,6 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const bcrypt = require('bcryptjs');
 
-// IMPORTANT: db must be imported BEFORE use
 const dbModule = require('./db');
 const db = dbModule.db;
 const initializeDatabase = dbModule.initializeDatabase;
@@ -15,7 +14,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Initialize Database FIRST
+// Initialize DB
 initializeDatabase();
 
 /* AUTO CREATE MAIN ADMIN */
@@ -31,14 +30,16 @@ db.get(
       const hashedPassword = await bcrypt.hash('admin123', 10);
 
       db.run(
-        `INSERT INTO users (id, name, email, password, role, status)
-         VALUES (?, ?, ?, ?, ?, ?)`,
+        `INSERT INTO users
+        (id, name, email, password, role, phone, status)
+        VALUES (?, ?, ?, ?, ?, ?, ?)`,
         [
           'admin-001',
           'Main Admin',
           'admin@inventory.com',
           hashedPassword,
           'admin',
+          '9999999999',
           'active'
         ],
         (err) => {
@@ -58,7 +59,7 @@ app.use('/api/distributor', require('./routes/distributor'));
 app.use('/api/retailer', require('./routes/retailer'));
 app.use('/api/customer', require('./routes/customer'));
 
-// Health check
+// Health
 app.get('/api/health', (req, res) => {
   res.json({ status: 'Server running' });
 });
