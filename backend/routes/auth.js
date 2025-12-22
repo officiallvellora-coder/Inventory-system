@@ -23,36 +23,26 @@ router.post('/register', async (req, res) => {
   const { name, email, password, role, mobile, location, pincode } = req.body;
 
   if (!name || !email || !password || !role) {
-    return res.status(400).json({ error: 'Missing required fields' });
-  }
-
-  if (!['superstockist', 'distributor', 'retailer'].includes(role)) {
-    return res.status(400).json({ error: 'Invalid role' });
+    return res.status(400).json({ error: 'Missing fields' });
   }
 
   const hashedPassword = await bcrypt.hash(password, 10);
   const id = `${role}-${Date.now()}`;
 
-  db.run(
-    `INSERT INTO users
-     (id, name, email, password, role, mobile, location, pincode, status)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending')`,
-    [id, name, email, hashedPassword, role, mobile, location, pincode],
-    err => {
-      if (err) {
-        if (err.message.includes('UNIQUE')) {
-          return res.status(400).json({ error: 'Email already registered' });
-        }
-        return res.status(500).json({ error: err.message });
-      }
+  const hashedPassword = await bcrypt.hash(password, 10);
+  const id = `${role}-${Date.now()}`;
 
-      res.json({
-        message: 'Registration successful. Awaiting admin approval.'
-      });
+  db.run(
+    `INSERT INTO users 
+     (id, email, password, name, phone, location, pincode, role, status)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending')`,
+    [id, email, hashedPassword, name, mobile, location, pincode, role],
+    (err) => {
+      if (err) return res.status(500).json({ error: err.message });
+      res.json({ message: 'Registration submitted for approval' });
     }
   );
 });
-
 /* =====================
    LOGIN
    ===================== */
@@ -96,3 +86,4 @@ router.post('/login', (req, res) => {
 });
 
 module.exports = router;
+
