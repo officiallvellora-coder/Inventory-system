@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 
-const API_URL = 'http://localhost:5000/api';
+const API_URL = 'https://inventory-system-9k38.onrender.com/api';
 
 export default function CustomerScanner() {
   const [role, setRole] = useState('');
@@ -96,4 +96,5 @@ export default function CustomerScanner() {
       {message && <div className="message">{message}</div>}
     </div>
   );
+
 }
