@@ -3,6 +3,7 @@ const bcrypt = require('bcryptjs');
 const { db } = require('../db');
 const { auth, adminAuth } = require('../middleware/auth');
 const adminController = require('../controllers/adminController');
+const productController = require('../controllers/productController');
 
 const router = express.Router();
 
@@ -133,6 +134,7 @@ router.get('/alerts', adminController.getAlerts);
 router.get('/expiring-batches', adminController.getExpiringBatches);
 router.post('/recall-batch/:batchNumber', adminController.recallBatch);
 router.get('/inventory-showcase', adminController.getInventoryShowcase);
+router.post('/create-product', productController.createProduct);
+router.post('/create-box', productController.createBox);
 
 module.exports = router;
-
