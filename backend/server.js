@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
+const bcrypt = require('bcryptjs');
 const { db, initializeDatabase } = require('./db');
 
 dotenv.config();
@@ -13,6 +14,43 @@ app.use(express.json());
 
 // Initialize Database
 initializeDatabase();
+
+/* =========================
+   AUTO CREATE MAIN ADMIN
+   ========================= */
+db.get(
+  "SELECT id FROM users WHERE role = 'admin'",
+  async (err, row) => {
+    if (err) {
+      console.error('Admin check error:', err);
+      return;
+    }
+
+    if (!row) {
+      const hashedPassword = await bcrypt.hash('admin123', 10);
+
+      db.run(
+        `INSERT INTO users (id, name, email, password, role, status)
+         VALUES (?, ?, ?, ?, ?, ?)`,
+        [
+          'admin-001',
+          'Main Admin',
+          'admin@inventory.com',
+          hashedPassword,
+          'admin',
+          'active'
+        ],
+        (err) => {
+          if (err) {
+            console.error('Admin creation error:', err);
+          } else {
+            console.log('Main Admin auto-created');
+          }
+        }
+      );
+    }
+  }
+);
 
 // Routes
 app.use('/api/auth', require('./routes/auth'));
@@ -35,5 +73,5 @@ app.use((err, req, res, next) => {
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 });
