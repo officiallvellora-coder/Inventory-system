@@ -17,17 +17,27 @@ function App() {
   useEffect(() => {
     const token = localStorage.getItem('token');
 
-    if (token) {
-      try {
-        const decoded = jwtDecode(token);
+    if (!token) {
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const decoded = jwtDecode(token);
+
+      // 🔴 TOKEN EXPIRED → FORCE LOGOUT
+      if (decoded.exp * 1000 < Date.now()) {
+        localStorage.removeItem('token');
+        setUser(null);
+      } else {
         setUser({
           id: decoded.id,
           role: decoded.role
         });
-      } catch (err) {
-        localStorage.removeItem('token');
-        setUser(null);
       }
+    } catch (err) {
+      localStorage.removeItem('token');
+      setUser(null);
     }
 
     setLoading(false);
