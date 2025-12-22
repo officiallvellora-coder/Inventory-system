@@ -1,56 +1,98 @@
 const express = require('express');
+const bcrypt = require('bcryptjs');
+const { db } = require('../db');
 const { auth, adminAuth } = require('../middleware/auth');
 const adminController = require('../controllers/adminController');
 
 const router = express.Router();
 
-/*
-  ADMIN RULES:
-  - Full visibility only (no direct inventory mutation)
-  - Can view users, inventory, alerts, sales data
-  - Can recall batches
-*/
-
-// All admin routes are protected
+// protect all admin routes
 router.use(auth);
 router.use(adminAuth);
 
-// Users & hierarchy
+/* =====================
+   VIEW ALL USERS
+   ===================== */
 router.get('/users', adminController.getUsers);
 
-// Inventory overview (who has how much)
-router.get('/inventory-overview', adminController.getInventoryOverview);
+/* =====================
+   VIEW PENDING REGISTRATIONS
+   ===================== */
+router.get('/pending-users', (req, res) => {
+  db.all(
+    `SELECT id, name, email, role, mobile, location, pincode, createdAt
+     FROM users WHERE status = 'pending'`,
+    (err, rows) => {
+      if (err) return res.status(500).json({ error: err.message });
+      res.json(rows);
+    }
+  );
+});
 
-// Sales & customer scan analytics (no cashback automation)
-router.get('/sales-analytics', adminController.getSalesAnalytics);
+/* =====================
+   APPROVE USER
+   ===================== */
+router.post('/approve-user/:id', (req, res) => {
+  const { id } = req.params;
 
-// Alerts (low stock, expiry, geo issues)
-router.get('/alerts', adminController.getAlerts);
+  db.run(
+    `UPDATE users SET status = 'active' WHERE id = ?`,
+    [id],
+    err => {
+      if (err) return res.status(500).json({ error: err.message });
+      res.json({ message: 'User approved' });
+    }
+  );
+});
 
-// Expiring batches
-router.get('/expiring-batches', adminController.getExpiringBatches);
+/* =====================
+   REJECT USER
+   ===================== */
+router.delete('/reject-user/:id', (req, res) => {
+  const { id } = req.params;
 
-// Recall a batch (blocks further sales)
-router.post('/recall-batch/:batchNumber', adminController.recallBatch);
+  db.run(
+    `DELETE FROM users WHERE id = ? AND status = 'pending'`,
+    [id],
+    err => {
+      if (err) return res.status(500).json({ error: err.message });
+      res.json({ message: 'User rejected' });
+    }
+  );
+});
 
-router.post('/create-superstockist', (req, res) => {
+/* =====================
+   CREATE SUPER STOCKIST (DIRECT)
+   ===================== */
+router.post('/create-superstockist', async (req, res) => {
   const { name, email, password, mobile, location, pincode } = req.body;
 
   if (!name || !email || !password) {
     return res.status(400).json({ error: 'Missing fields' });
   }
 
-  const id = `ss-${Date.now()}`;
+  const hashedPassword = await bcrypt.hash(password, 10);
+  const id = `superstockist-${Date.now()}`;
 
   db.run(
-    `INSERT INTO users (id, name, email, password, role, mobile, location, pincode, status)
+    `INSERT INTO users
+     (id, name, email, password, role, mobile, location, pincode, status)
      VALUES (?, ?, ?, ?, 'superstockist', ?, ?, ?, 'active')`,
-    [id, name, email, password, mobile, location, pincode],
+    [id, name, email, hashedPassword, mobile, location, pincode],
     err => {
       if (err) return res.status(500).json({ error: err.message });
       res.json({ message: 'Super Stockist created', id });
     }
   );
 });
+
+/* =====================
+   EXISTING ADMIN FEATURES
+   ===================== */
+router.get('/inventory-overview', adminController.getInventoryOverview);
+router.get('/sales-analytics', adminController.getSalesAnalytics);
+router.get('/alerts', adminController.getAlerts);
+router.get('/expiring-batches', adminController.getExpiringBatches);
+router.post('/recall-batch/:batchNumber', adminController.recallBatch);
 
 module.exports = router;
