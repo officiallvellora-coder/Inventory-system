@@ -59,7 +59,7 @@ export default function LoginPage({ setUser }) {
   return (
     <div className="login-container">
       <div className="login-card">
-        <h1>Inventory System</h1>
+        <h1>VELLORA HYBRID SYSTEM</h1>
 
         {mode === 'login' ? (
           <>
@@ -149,3 +149,4 @@ export default function LoginPage({ setUser }) {
     </div>
   );
 }
+
