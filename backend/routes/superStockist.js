@@ -1,7 +1,6 @@
 const express = require('express');
 const { db } = require('../db');
 const qrController = require('../controllers/qrController');
-const inventoryController = require('../controllers/inventoryController');
 const { auth } = require('../middleware/auth');
 
 const router = express.Router();
@@ -10,8 +9,7 @@ const router = express.Router();
   SUPER-STOCKIST RULES:
   - Can view own distributors
   - Can generate BOX + PRODUCT QRs
-  - Can transfer inventory to distributors
-  - Has full visibility of downstream stock
+  - Has visibility of downstream stock
 */
 
 // Get all distributors under this super-stockist
@@ -29,9 +27,6 @@ router.get('/distributors/:superStockistId', auth, (req, res) => {
     }
   );
 });
-
-// Transfer inventory to distributor
-router.post('/transfer-inventory', auth, inventoryController.transferInventory);
 
 // View stock movement under super-stockist
 router.get('/stock-movement/:superStockistId', auth, (req, res) => {
@@ -59,6 +54,10 @@ router.get('/stock-movement/:superStockistId', auth, (req, res) => {
 });
 
 // Generate BOX + PRODUCT QRs (12 units per box)
-router.post('/generate-box', auth, qrController.generateBoxWithProducts);
+router.post(
+  '/generate-box',
+  auth,
+  qrController.generateBoxWithProducts
+);
 
 module.exports = router;
