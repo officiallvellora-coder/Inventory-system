@@ -49,7 +49,7 @@ export default function LoginPage({ setUser }) {
         pincode
       });
 
-      setMessage(res.data.message);
+      setMessage('Registration submitted. Wait for admin approval.');
       setMode('login');
     } catch (err) {
       setMessage(err.response?.data?.error || 'Registration failed');
@@ -82,7 +82,7 @@ export default function LoginPage({ setUser }) {
             </form>
 
             <p onClick={() => setMode('register')} style={{ cursor: 'pointer' }}>
-              Register as Super Stockist / Distributor / Retailer
+              Register New Account
             </p>
           </>
         ) : (
@@ -135,7 +135,7 @@ export default function LoginPage({ setUser }) {
                 onChange={e => setPincode(e.target.value)}
               />
 
-              <button type="submit">Register</button>
+              <button type="submit">Submit Registration</button>
             </form>
 
             <p onClick={() => setMode('login')} style={{ cursor: 'pointer' }}>
@@ -149,4 +149,3 @@ export default function LoginPage({ setUser }) {
     </div>
   );
 }
-
