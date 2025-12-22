@@ -12,5 +12,6 @@ Used by:
 */
 
 router.post('/scan', qrController.scanQR);
+router.post('/scan', qrController.scanQR);
 
 module.exports = router;
