@@ -12,8 +12,8 @@ ROLES:
 - retailer
 
 STATUS:
-- pending  (registered, waiting for admin approval)
-- active   (approved, can login)
+- pending
+- active
 */
 
 /* =====================
@@ -22,27 +22,31 @@ STATUS:
 router.post('/register', async (req, res) => {
   const { name, email, password, role, mobile, location, pincode } = req.body;
 
-  if (!name || !email || !password || !role) {
+  if (!name || !email || !password || !role || !mobile || !location || !pincode) {
     return res.status(400).json({ error: 'Missing fields' });
   }
 
-  const hashedPassword = await bcrypt.hash(password, 10);
-  const id = `${role}-${Date.now()}`;
+  try {
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const id = `${role}-${Date.now()}`;
 
-  const hashedPassword = await bcrypt.hash(password, 10);
-  const id = `${role}-${Date.now()}`;
-
-  db.run(
-    `INSERT INTO users 
-     (id, email, password, name, phone, location, pincode, role, status)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending')`,
-    [id, email, hashedPassword, name, mobile, location, pincode, role],
-    (err) => {
-      if (err) return res.status(500).json({ error: err.message });
-      res.json({ message: 'Registration submitted for approval' });
-    }
-  );
+    db.run(
+      `INSERT INTO users
+       (id, email, password, name, phone, location, pincode, role, status)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending')`,
+      [id, email, hashedPassword, name, mobile, location, pincode, role],
+      (err) => {
+        if (err) {
+          return res.status(500).json({ error: err.message });
+        }
+        res.json({ message: 'Registration submitted for admin approval' });
+      }
+    );
+  } catch (err) {
+    res.status(500).json({ error: 'Registration failed' });
+  }
 });
+
 /* =====================
    LOGIN
    ===================== */
@@ -58,7 +62,7 @@ router.post('/login', (req, res) => {
 
       if (user.status !== 'active') {
         return res.status(403).json({
-          error: 'Account not approved by admin yet'
+          error: 'Account pending admin approval'
         });
       }
 
@@ -69,7 +73,7 @@ router.post('/login', (req, res) => {
 
       const token = jwt.sign(
         { id: user.id, role: user.role },
-        process.env.JWT_SECRET,
+        process.env.JWT_SECRET || 'secret',
         { expiresIn: '1d' }
       );
 
@@ -86,4 +90,3 @@ router.post('/login', (req, res) => {
 });
 
 module.exports = router;
-
