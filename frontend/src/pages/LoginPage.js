@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import logo from '../assets/vellora-logo.png';
 
 const API_URL = 'https://inventory-system-9k38.onrender.com/api';
 
@@ -72,7 +73,16 @@ export default function LoginPage({ setUser }) {
   return (
     <div className="login-container">
       <div className="login-card">
-        <h1>VELLORA HYBRID SYSTEM</h1>
+
+        {/* VELLORA LOGO */}
+        <div style={{ textAlign: 'center', marginBottom: 20 }}>
+          <img
+            src={logo}
+            alt="Vellora Logo"
+            style={{ width: 120, marginBottom: 10 }}
+          />
+          <h1>VELLORA HYBRID SYSTEM</h1>
+        </div>
 
         {mode === 'login' ? (
           <>
@@ -98,7 +108,7 @@ export default function LoginPage({ setUser }) {
               </button>
             </form>
 
-            <p onClick={() => setMode('register')} style={{ cursor: 'pointer' }}>
+            <p onClick={() => setMode('register')} style={{ cursor: 'pointer', marginTop: 12 }}>
               Register New Account
             </p>
           </>
@@ -158,13 +168,13 @@ export default function LoginPage({ setUser }) {
               </button>
             </form>
 
-            <p onClick={() => setMode('login')} style={{ cursor: 'pointer' }}>
+            <p onClick={() => setMode('login')} style={{ cursor: 'pointer', marginTop: 12 }}>
               Back to Login
             </p>
           </>
         )}
 
-        {message && <p>{message}</p>}
+        {message && <p style={{ marginTop: 12 }}>{message}</p>}
       </div>
     </div>
   );
