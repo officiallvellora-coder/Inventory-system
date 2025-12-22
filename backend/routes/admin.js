@@ -33,4 +33,24 @@ router.get('/expiring-batches', adminController.getExpiringBatches);
 // Recall a batch (blocks further sales)
 router.post('/recall-batch/:batchNumber', adminController.recallBatch);
 
+router.post('/create-superstockist', (req, res) => {
+  const { name, email, password, mobile, location, pincode } = req.body;
+
+  if (!name || !email || !password) {
+    return res.status(400).json({ error: 'Missing fields' });
+  }
+
+  const id = `ss-${Date.now()}`;
+
+  db.run(
+    `INSERT INTO users (id, name, email, password, role, mobile, location, pincode, status)
+     VALUES (?, ?, ?, ?, 'superstockist', ?, ?, ?, 'active')`,
+    [id, name, email, password, mobile, location, pincode],
+    err => {
+      if (err) return res.status(500).json({ error: err.message });
+      res.json({ message: 'Super Stockist created', id });
+    }
+  );
+});
+
 module.exports = router;
