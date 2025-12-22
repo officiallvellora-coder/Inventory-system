@@ -38,6 +38,9 @@ db.get(
           'admin@inventory.com',
           hashedPassword,
           'admin',
+          '9999999999',
+          'HQ'
+          '000000'
           'active'
         ],
         (err) => {
@@ -75,3 +78,4 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
+
