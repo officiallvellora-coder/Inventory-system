@@ -33,3 +33,4 @@ export default function AdminDashboard() {
     </div>
   );
 }
+<GenerateQRBox />
