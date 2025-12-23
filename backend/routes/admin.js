@@ -4,52 +4,67 @@ const adminController = require('../controllers/adminController');
 
 const router = express.Router();
 
-// protect all admin routes
+/* =====================
+   PROTECT ALL ADMIN ROUTES
+   ===================== */
 router.use(auth);
 router.use(adminAuth);
 
 /* =====================
    USERS
    ===================== */
-router.get('/users', (req, res) =>
-  adminController.getUsers(req, res)
-);
+router.get('/users', (req, res) => {
+  adminController.getUsers(req, res);
+});
 
 /* =====================
-
-   INVENTORY OVERVIEW
+   PENDING USERS (APPROVALS)
    ===================== */
-router.get('/inventory-overview', (req, res) =>
-  adminController.getInventoryOverview(req, res)
-);
+router.get('/pending-users', (req, res) => {
+  adminController.getPendingUsers(req, res);
+});
+
+router.post('/approve-user/:id', (req, res) => {
+  adminController.approveUser(req, res);
+});
+
+router.delete('/reject-user/:id', (req, res) => {
+  adminController.rejectUser(req, res);
+});
 
 /* =====================
-   SALES ANALYTICS
+   INVENTORY OVERVIEW (CARDS)
    ===================== */
-router.get('/sales-analytics', (req, res) =>
-  adminController.getSalesAnalytics(req, res)
-);
+router.get('/inventory-overview', (req, res) => {
+  adminController.getInventoryOverview(req, res);
+});
 
 /* =====================
    ALERTS
    ===================== */
-router.get('/alerts', (req, res) =>
-  adminController.getAlerts(req, res)
-);
+router.get('/alerts', (req, res) => {
+  adminController.getAlerts(req, res);
+});
+
+/* =====================
+   SALES ANALYTICS
+   ===================== */
+router.get('/sales-analytics', (req, res) => {
+  adminController.getSalesAnalytics(req, res);
+});
 
 /* =====================
    EXPIRING BATCHES
    ===================== */
-router.get('/expiring-batches', (req, res) =>
-  adminController.getExpiringBatches(req, res)
-);
+router.get('/expiring-batches', (req, res) => {
+  adminController.getExpiringBatches(req, res);
+});
 
 /* =====================
    RECALL BATCH
    ===================== */
-router.post('/recall-batch/:batchNumber', (req, res) =>
-  adminController.recallBatch(req, res)
-);
+router.post('/recall-batch/:batchNumber', (req, res) => {
+  adminController.recallBatch(req, res);
+});
 
 module.exports = router;
-
