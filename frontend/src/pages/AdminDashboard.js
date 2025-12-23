@@ -1,7 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import InventoryTable from '../components/InventoryTable';
-import AddProductModal from '../components/AddProductModal';
 
 const API_URL = 'https://inventory-system-9k38.onrender.com/api';
 
@@ -10,46 +8,54 @@ export default function AdminDashboard() {
 
   const [pendingUsers, setPendingUsers] = useState([]);
   const [inventory, setInventory] = useState([]);
-  const [showAdd, setShowAdd] = useState(false);
 
-  const headers = { Authorization: `Bearer ${token}` };
+  useEffect(() => {
+    fetchPendingUsers();
+    fetchInventory();
+  }, []);
 
-  const loadPending = async () => {
-    const res = await axios.get(`${API_URL}/admin/pending-users`, { headers });
+  const fetchPendingUsers = async () => {
+    const res = await axios.get(`${API_URL}/admin/pending-users`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
     setPendingUsers(res.data);
   };
 
-  const loadInventory = async () => {
-    const res = await axios.get(`${API_URL}/admin/inventory`, { headers });
+  const fetchInventory = async () => {
+    const res = await axios.get(`${API_URL}/admin/inventory-overview`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
     setInventory(res.data);
   };
 
   const approveUser = async (id) => {
-    await axios.post(`${API_URL}/admin/approve-user/${id}`, {}, { headers });
-    loadPending();
+    await axios.post(
+      `${API_URL}/admin/approve-user/${id}`,
+      {},
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    fetchPendingUsers();
   };
 
   const rejectUser = async (id) => {
-    await axios.delete(`${API_URL}/admin/reject-user/${id}`, { headers });
-    loadPending();
+    await axios.delete(
+      `${API_URL}/admin/reject-user/${id}`,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    fetchPendingUsers();
   };
 
-  useEffect(() => {
-    loadPending();
-    loadInventory();
-    // eslint-disable-next-line
-  }, []);
-
   return (
-    <div className="admin-dashboard">
+    <div style={{ padding: 20 }}>
       <h1>VELLORA HYBRID SYSTEM – ADMIN</h1>
 
-      {/* Pending Approvals */}
+      {/* PENDING APPROVALS */}
       <h2>Pending Approvals</h2>
+
       {pendingUsers.length === 0 ? (
-        <p>No pending users</p>
+        <p>No pending requests</p>
       ) : (
-        <table>
+        <table border="1" cellPadding="10">
           <thead>
             <tr>
               <th>Name</th>
@@ -74,21 +80,16 @@ export default function AdminDashboard() {
         </table>
       )}
 
-      {/* Inventory */}
-      <h2 style={{ marginTop: 30 }}>Inventory</h2>
-      <button onClick={() => setShowAdd(true)}>➕ Add Product</button>
+      {/* INVENTORY */}
+      <h2 style={{ marginTop: 40 }}>Inventory Overview</h2>
 
-      <InventoryTable data={inventory} />
-
-      {showAdd && (
-        <AddProductModal
-          onClose={() => setShowAdd(false)}
-          onSuccess={() => {
-            setShowAdd(false);
-            loadInventory();
-          }}
-        />
-      )}
+      <ul>
+        {inventory.map((i, idx) => (
+          <li key={idx}>
+            {i.role} – Total: {i.totalQuantity}, Low Stock: {i.lowStockItems}
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
