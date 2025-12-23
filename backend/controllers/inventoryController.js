@@ -76,7 +76,7 @@ const inventoryController = {
   /* =====================
      UPDATE INVENTORY QTY
      ===================== */
-  updateQuantity(req, res) {
+  Admin(req, res) {
     const { productId } = req.params;
     const { quantity } = req.body;
 
@@ -100,7 +100,7 @@ const inventoryController = {
      TRANSFER INVENTORY
      (Distributor → Retailer)
      ===================== */
-  transferInventory(req, res) {
+  Super-Stockiest & Distributor(req, res) {
     const { fromUserId, toUserId, productId, quantity } = req.body;
 
     if (!fromUserId || !toUserId || !productId || !quantity) {
@@ -166,3 +166,4 @@ const inventoryController = {
 };
 
 module.exports = inventoryController;
+
