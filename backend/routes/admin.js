@@ -16,6 +16,7 @@ router.get('/users', (req, res) =>
 );
 
 /* =====================
+
    INVENTORY OVERVIEW
    ===================== */
 router.get('/inventory-overview', (req, res) =>
@@ -51,3 +52,4 @@ router.post('/recall-batch/:batchNumber', (req, res) =>
 );
 
 module.exports = router;
+
