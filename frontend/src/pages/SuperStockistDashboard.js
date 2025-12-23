@@ -18,12 +18,13 @@ export default function SuperStockistDashboard() {
 
   return (
     <div className="super-stockist-dashboard">
-      <h1>🏭 Super-Stockist Dashboard</h1>
+      <h1>Super-Stockist Dashboard</h1>
 
       <div className="section">
-        <h2>📦 Current Inventory</h2>
+        <h2>Current Inventory</h2>
         <p>Total Items: {inventory.length}</p>
       </div>
     </div>
   );
+
 }
