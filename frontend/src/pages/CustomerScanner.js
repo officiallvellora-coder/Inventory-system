@@ -11,16 +11,20 @@ export default function CustomerScanner() {
   const [location, setLocation] = useState('');
   const [pincode, setPincode] = useState('');
   const [message, setMessage] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e) => {
+  const submit = async (e) => {
     e.preventDefault();
+    setMessage('');
 
     if (!role || !qrCode || !name || !mobile || !location) {
-      setMessage('All required fields must be filled');
+      setMessage('Please fill all required fields');
       return;
     }
 
     try {
+      setLoading(true);
+
       const res = await axios.post(`${API_URL}/customer/scan`, {
         qrCode,
         role,
@@ -30,69 +34,72 @@ export default function CustomerScanner() {
         pincode
       });
 
-      setMessage(res.data.message);
+      setMessage(res.data.message || 'Scan successful');
 
       setQrCode('');
       setName('');
       setMobile('');
       setLocation('');
       setPincode('');
+      setRole('');
     } catch (err) {
       setMessage(err.response?.data?.error || 'Scan failed');
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div style={{ padding: 24, maxWidth: 500, margin: '0 auto' }}>
+    <div className="customer-scanner">
       <h1>QR Scan</h1>
 
-      <form onSubmit={handleSubmit}>
-        <label>Scan As</label>
-        <select value={role} onChange={e => setRole(e.target.value)}>
-          <option value="">Select Role</option>
-          <option value="superstockist">Super Stockist</option>
-          <option value="distributor">Distributor</option>
-          <option value="retailer">Retailer</option>
-          <option value="customer">Customer</option>
-        </select>
+      <form onSubmit={submit}>
+        <div className="form-group">
+          <label>Scan As</label>
+          <select value={role} onChange={(e) => setRole(e.target.value)}>
+            <option value="">Select</option>
+            <option value="superstockist">Super Stockist</option>
+            <option value="distributor">Distributor</option>
+            <option value="retailer">Retailer</option>
+            <option value="customer">Customer</option>
+          </select>
+        </div>
 
-        <label>QR Code</label>
-        <input
-          value={qrCode}
-          onChange={e => setQrCode(e.target.value)}
-          placeholder="UNIT-XXXX"
-        />
+        <div className="form-group">
+          <label>QR Code</label>
+          <input
+            value={qrCode}
+            onChange={(e) => setQrCode(e.target.value)}
+            placeholder="Scan / paste QR code"
+          />
+        </div>
 
-        <label>Name</label>
-        <input
-          value={name}
-          onChange={e => setName(e.target.value)}
-        />
+        <div className="form-group">
+          <label>Name</label>
+          <input value={name} onChange={(e) => setName(e.target.value)} />
+        </div>
 
-        <label>Mobile</label>
-        <input
-          value={mobile}
-          onChange={e => setMobile(e.target.value)}
-        />
+        <div className="form-group">
+          <label>Mobile</label>
+          <input value={mobile} onChange={(e) => setMobile(e.target.value)} />
+        </div>
 
-        <label>Location</label>
-        <input
-          value={location}
-          onChange={e => setLocation(e.target.value)}
-        />
+        <div className="form-group">
+          <label>Location</label>
+          <input value={location} onChange={(e) => setLocation(e.target.value)} />
+        </div>
 
-        <label>Pincode</label>
-        <input
-          value={pincode}
-          onChange={e => setPincode(e.target.value)}
-        />
+        <div className="form-group">
+          <label>Pincode</label>
+          <input value={pincode} onChange={(e) => setPincode(e.target.value)} />
+        </div>
 
-        <button type="submit" style={{ marginTop: 16 }}>
-          Submit Scan
+        <button type="submit" disabled={loading}>
+          {loading ? 'Processing...' : 'Submit Scan'}
         </button>
       </form>
 
-      {message && <p style={{ marginTop: 16 }}>{message}</p>}
+      {message && <div className="message">{message}</div>}
     </div>
   );
 }
