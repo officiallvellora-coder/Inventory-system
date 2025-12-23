@@ -79,7 +79,8 @@ const adminController = {
   getAlerts(req, res) {
     db.all(
       `
-      SELECT u.name, u.role, SUM(i.quantity) AS stock, 'Low stock' AS message
+      SELECT u.name, u.role, SUM(i.quantity) AS stock,
+             'Low stock alert' AS message
       FROM inventory i
       JOIN users u ON u.id = i.userId
       GROUP BY i.userId
@@ -88,6 +89,58 @@ const adminController = {
       (err, rows) => {
         if (err) return res.status(500).json({ error: err.message });
         res.json(rows);
+      }
+    );
+  },
+
+  /* =====================
+     SALES ANALYTICS
+     ===================== */
+  getSalesAnalytics(req, res) {
+    db.all(
+      `
+      SELECT DATE(scannedAt) AS date,
+             COUNT(*) AS totalSales
+      FROM sales
+      GROUP BY DATE(scannedAt)
+      ORDER BY date DESC
+      `,
+      (err, rows) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json(rows);
+      }
+    );
+  },
+
+  /* =====================
+     EXPIRING BATCHES
+     ===================== */
+  getExpiringBatches(req, res) {
+    db.all(
+      `
+      SELECT id, batchNumber, expiryDate
+      FROM products
+      WHERE expiryDate <= date('now', '+30 days')
+      `,
+      (err, rows) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json(rows);
+      }
+    );
+  },
+
+  /* =====================
+     RECALL BATCH
+     ===================== */
+  recallBatch(req, res) {
+    const { batchNumber } = req.params;
+
+    db.run(
+      `UPDATE products SET status = 'recalled' WHERE batchNumber = ?`,
+      [batchNumber],
+      err => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json({ message: 'Batch recalled successfully' });
       }
     );
   }
