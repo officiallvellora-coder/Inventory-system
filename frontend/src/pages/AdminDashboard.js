@@ -11,10 +11,21 @@ export default function AdminDashboard() {
   const token = localStorage.getItem('token');
 
   const [inventory, setInventory] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [showAdd, setShowAdd] = useState(false);
-  const [showQR, setShowQR] = useState(false);
-  const [error, setError] = useState('');
+
+  /* =====================
+     LOAD INVENTORY
+     ===================== */
+  const loadInventory = async () => {
+    try {
+      const res = await axios.get(`${API_URL}/admin/inventory`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setInventory(res.data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   useEffect(() => {
     if (!token) {
@@ -25,120 +36,62 @@ export default function AdminDashboard() {
     // eslint-disable-next-line
   }, []);
 
-  const loadInventory = async () => {
-    try {
-      setLoading(true);
-      const res = await axios.get(`${API_URL}/admin/inventory`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setInventory(res.data);
-    } catch (err) {
-      setError('Failed to load inventory');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleLogout = () => {
+  /* =====================
+     LOGOUT
+     ===================== */
+  const logout = () => {
     localStorage.removeItem('token');
     window.location.href = '/login';
   };
 
-  if (loading) {
-    return <div style={{ padding: 30 }}>Loading inventory...</div>;
-  }
-
   return (
-    <div style={{ padding: 24 }}>
-      {/* Header */}
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginBottom: 24
-        }}
-      >
+    <div className="admin-dashboard" style={{ padding: 24 }}>
+      {/* HEADER */}
+      <div style={header}>
         <h1>VELLORA HYBRID SYSTEM</h1>
-
-        <button
-          onClick={handleLogout}
-          style={{
-            background: '#e74c3c',
-            color: '#fff',
-            border: 'none',
-            padding: '8px 16px',
-            borderRadius: 4,
-            cursor: 'pointer'
-          }}
-        >
-          Logout
-        </button>
+        <button onClick={logout} style={logoutBtn}>Logout</button>
       </div>
 
-      {/* Action Buttons */}
-      <div style={{ display: 'flex', gap: 12, marginBottom: 16 }}>
-        <button
-          onClick={() => setShowAdd(true)}
-          style={{
-            background: '#2ecc71',
-            color: '#fff',
-            border: 'none',
-            padding: '10px 18px',
-            borderRadius: 4,
-            cursor: 'pointer',
-            fontWeight: 'bold'
-          }}
-        >
+      {/* ADD PRODUCT */}
+      <div style={{ marginBottom: 20 }}>
+        <button onClick={() => setShowAdd(true)}>
           + Add Product
         </button>
-
-        <button
-          onClick={() => setShowQR(true)}
-          style={{
-            background: '#3498db',
-            color: '#fff',
-            border: 'none',
-            padding: '10px 18px',
-            borderRadius: 4,
-            cursor: 'pointer',
-            fontWeight: 'bold'
-          }}
-        >
-          Generate QR Box
-        </button>
       </div>
 
-      {/* Error */}
-      {error && (
-        <div style={{ color: 'red', marginBottom: 12 }}>
-          {error}
-        </div>
-      )}
-
-      {/* Inventory Table */}
+      {/* INVENTORY TABLE */}
       <InventoryTable data={inventory} refresh={loadInventory} />
 
-      {/* Add Product Modal */}
+      {/* QR GENERATION */}
+      <GenerateQRBox />
+
+      {/* ADD PRODUCT MODAL */}
       {showAdd && (
         <AddProductModal
           onClose={() => setShowAdd(false)}
-          onSuccess={() => {
-            setShowAdd(false);
-            loadInventory();
-          }}
-        />
-      )}
-
-      {/* Generate QR Modal */}
-      {showQR && (
-        <GenerateQRBox
-          onClose={() => setShowQR(false)}
-          onSuccess={() => {
-            setShowQR(false);
-          }}
+          onSuccess={loadInventory}
         />
       )}
     </div>
   );
 }
+
+/* =====================
+   STYLES
+   ===================== */
+
+const header = {
+  display: 'flex',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  marginBottom: 20
+};
+
+const logoutBtn = {
+  background: '#e74c3c',
+  color: '#fff',
+  border: 'none',
+  padding: '8px 14px',
+  borderRadius: 4,
+  cursor: 'pointer'
+};
