@@ -5,55 +5,99 @@ const API_URL = 'https://inventory-system-9k38.onrender.com/api';
 
 export default function InventoryTable({ data, refresh }) {
   const token = localStorage.getItem('token');
-  const [editing, setEditing] = useState({});
+  const [editingId, setEditingId] = useState(null);
+  const [qty, setQty] = useState('');
 
-  const save = async (productId, qty) => {
-    await axios.put(
-      `${API_URL}/admin/inventory/${productId}`,
-      { quantity: qty },
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
-    refresh();
+  const startEdit = (row) => {
+    setEditingId(row.productId);
+    setQty(row.quantity);
   };
 
+  const cancelEdit = () => {
+    setEditingId(null);
+    setQty('');
+  };
+
+  const saveQty = async (productId) => {
+    try {
+      await axios.put(
+        `${API_URL}/admin/inventory/${productId}`,
+        { quantity: Number(qty) },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setEditingId(null);
+      refresh();
+    } catch (err) {
+      alert(err.response?.data?.error || 'Update failed');
+    }
+  };
+
+  if (!data || data.length === 0) {
+    return <p>No inventory available</p>;
+  }
+
   return (
-    <table>
-      <thead>
-        <tr>
-          <th>Product</th>
-          <th>SKU</th>
-          <th>Batch</th>
-          <th>Expiry</th>
-          <th>Holder</th>
-          <th>Qty</th>
-          <th>Action</th>
-        </tr>
-      </thead>
-      <tbody>
-        {data.map(p => (
-          <tr key={p.productId}>
-            <td>{p.name}</td>
-            <td>{p.sku}</td>
-            <td>{p.batchNumber}</td>
-            <td>{p.expiryDate}</td>
-            <td>{p.holder || 'ADMIN'}</td>
-            <td>
-              <input
-                type="number"
-                value={editing[p.productId] ?? p.quantity}
-                onChange={e =>
-                  setEditing({ ...editing, [p.productId]: e.target.value })
-                }
-              />
-            </td>
-            <td>
-              <button onClick={() => save(p.productId, editing[p.productId])}>
-                Save
-              </button>
-            </td>
+    <div style={{ overflowX: 'auto', marginTop: 20 }}>
+      <table style={table}>
+        <thead>
+          <tr>
+            <th>Product</th>
+            <th>SKU</th>
+            <th>Batch</th>
+            <th>Expiry</th>
+            <th>Holder</th>
+            <th>Role</th>
+            <th>Quantity</th>
+            <th>Action</th>
           </tr>
-        ))}
-      </tbody>
-    </table>
+        </thead>
+
+        <tbody>
+          {data.map((row) => (
+            <tr key={row.productId}>
+              <td>{row.name}</td>
+              <td>{row.sku}</td>
+              <td>{row.batchNumber}</td>
+              <td>{row.expiryDate}</td>
+              <td>{row.holder || 'ADMIN'}</td>
+              <td>{row.role || 'admin'}</td>
+
+              <td>
+                {editingId === row.productId ? (
+                  <input
+                    type="number"
+                    value={qty}
+                    onChange={(e) => setQty(e.target.value)}
+                    style={{ width: 80 }}
+                  />
+                ) : (
+                  row.quantity
+                )}
+              </td>
+
+              <td>
+                {editingId === row.productId ? (
+                  <>
+                    <button onClick={() => saveQty(row.productId)}>Save</button>
+                    <button onClick={cancelEdit} style={{ marginLeft: 6 }}>
+                      Cancel
+                    </button>
+                  </>
+                ) : (
+                  <button onClick={() => startEdit(row)}>Edit</button>
+                )}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 }
+
+/* ===== STYLES ===== */
+
+const table = {
+  width: '100%',
+  borderCollapse: 'collapse'
+};
