@@ -63,6 +63,7 @@ app.use('/api/distributor', require('./routes/distributor'));
 app.use('/api/retailer', require('./routes/retailer'));
 app.use('/api/customer', require('./routes/customer'));
 app.use('/api/inventory', require('./routes/inventory'));
+app.use('/api/admin/inventory', require('./routes/inventory'));
 
 // Health
 app.get('/api/health', (req, res) => {
@@ -73,4 +74,5 @@ const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
+
 
