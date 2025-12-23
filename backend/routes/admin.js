@@ -1,26 +1,53 @@
 const express = require('express');
 const { auth, adminAuth } = require('../middleware/auth');
 const adminController = require('../controllers/adminController');
-const inventoryController = require('../controllers/inventoryController');
 
 const router = express.Router();
 
+// protect all admin routes
 router.use(auth);
 router.use(adminAuth);
 
-/* USERS */
-router.get('/users', adminController.getUsers);
-router.get('/pending-users', adminController.getPendingUsers);
-router.post('/approve-user/:id', adminController.approveUser);
-router.delete('/reject-user/:id', adminController.rejectUser);
+/* =====================
+   USERS
+   ===================== */
+router.get('/users', (req, res) =>
+  adminController.getUsers(req, res)
+);
 
-/* INVENTORY */
-router.get('/inventory', inventoryController.listInventory);
-router.post('/products', inventoryController.createProduct);
-router.put('/inventory/:productId', inventoryController.updateQuantity);
+/* =====================
+   INVENTORY OVERVIEW
+   ===================== */
+router.get('/inventory-overview', (req, res) =>
+  adminController.getInventoryOverview(req, res)
+);
 
-/* ANALYTICS */
-router.get('/inventory-overview', adminController.getInventoryOverview);
-router.get('/alerts', adminController.getAlerts);
+/* =====================
+   SALES ANALYTICS
+   ===================== */
+router.get('/sales-analytics', (req, res) =>
+  adminController.getSalesAnalytics(req, res)
+);
+
+/* =====================
+   ALERTS
+   ===================== */
+router.get('/alerts', (req, res) =>
+  adminController.getAlerts(req, res)
+);
+
+/* =====================
+   EXPIRING BATCHES
+   ===================== */
+router.get('/expiring-batches', (req, res) =>
+  adminController.getExpiringBatches(req, res)
+);
+
+/* =====================
+   RECALL BATCH
+   ===================== */
+router.post('/recall-batch/:batchNumber', (req, res) =>
+  adminController.recallBatch(req, res)
+);
 
 module.exports = router;
