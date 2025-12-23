@@ -2,6 +2,10 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
 const API_URL = 'http://localhost:5000/api';
+const handleLogout = () => {
+  localStorage.removeItem('token');
+  window.location.href = '/login';
+};
 
 export default function SuperStockistDashboard() {
   const [inventory, setInventory] = useState([]);
@@ -28,3 +32,4 @@ export default function SuperStockistDashboard() {
   );
 
 }
+
