@@ -4,7 +4,7 @@ const { db } = require('../db');
 /*
 INVENTORY CONTROLLER
 - Admin inventory control
-- Distributor → Retailer transfer support
+- Super-Stockist / Distributor inventory transfer
 */
 
 const inventoryController = {
@@ -59,8 +59,8 @@ const inventoryController = {
 
       db.run(
         `INSERT INTO inventory (id, userId, productId, quantity, lastUpdated)
-         VALUES (?, 'admin', ?, ?, CURRENT_TIMESTAMP)`,
-        [uuidv4(), productId, quantity]
+         VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)`,
+        [uuidv4(), 'admin', productId, quantity]
       );
 
       db.run('COMMIT', err => {
@@ -74,9 +74,9 @@ const inventoryController = {
   },
 
   /* =====================
-     UPDATE INVENTORY QTY
+     UPDATE INVENTORY QTY (ADMIN)
      ===================== */
-  Admin(req, res) {
+  updateQuantity(req, res) {
     const { productId } = req.params;
     const { quantity } = req.body;
 
@@ -91,16 +91,17 @@ const inventoryController = {
       [quantity, productId],
       err => {
         if (err) return res.status(500).json({ error: err.message });
-        res.json({ message: 'Quantity updated' });
+        res.json({ message: 'Quantity updated successfully' });
       }
     );
   },
 
   /* =====================
      TRANSFER INVENTORY
-     (Distributor → Retailer)
+     (Super-Stockist → Distributor
+      Distributor → Retailer)
      ===================== */
-  Super-Stockiest & Distributor(req, res) {
+  transferInventory(req, res) {
     const { fromUserId, toUserId, productId, quantity } = req.body;
 
     if (!fromUserId || !toUserId || !productId || !quantity) {
@@ -128,7 +129,7 @@ const inventoryController = {
             [quantity, fromUserId, productId]
           );
 
-          // Add to receiver (insert or update)
+          // Add to receiver
           db.get(
             `SELECT id FROM inventory
              WHERE userId = ? AND productId = ?`,
@@ -166,4 +167,3 @@ const inventoryController = {
 };
 
 module.exports = inventoryController;
-
